@@ -1,7 +1,6 @@
 import os
 import json
 import requests
-import config as config
 from Classes.Business import Business
 
 # TODO: ensure that 'search?term=' suffix is correct
@@ -10,7 +9,7 @@ ENDPOINT = 'https://api.yelp.com/v3/businesses/search?term='
 class FusionRepository:
     def __init__(self):
         self.headers = {
-            'Authorization': f'Bearer {config.fusion_key}',
+            'Authorization': f'Bearer {os.environ.get("FUSION_KEY")}',
             'accept': 'application/json',
         }
 

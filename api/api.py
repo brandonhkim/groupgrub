@@ -4,11 +4,13 @@ from flask import Flask
 
 app = Flask(__name__)
 
-# TODO: replace with home page
+# TODO: Remove - only being used to test differet React Components
 @app.route('/time')
 def get_current_time():
     fusion_repo = FusionRepository()
-    # print(fusion_repo.getRestaurants(['33.866669', '-117.566666'], ['mcdonalds'], 3))
+    # tmp = fusion_repo.getRestaurants(['33.866669', '-117.566666'], ['mcdonalds'], 3)
+    # for a in tmp: print(a.name)
+
     return {'time': time.time()}
 
 # NOTE: research data persistence, keep logged in
@@ -34,7 +36,7 @@ def host_join():
 def lobby():
     raise NotImplementedError
 
-
+# get categories, filter them, query yelp, begin
 @app.route('/lobby<code>/game')
 def game():
     raise NotImplementedError
