@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Loader } from '@googlemaps/js-api-loader'
 import LocationSearchInput from "../components/LocationSearchInput";
 
+
 // maidenless since 2021
 const SAL_ADDRESS = {
     lat:   34.02116,
@@ -11,6 +12,8 @@ const SAL_ADDRESS = {
 function LobbyPage() {
     const [isLoading, setLoading] = useState(true);
     const googlemap = useRef(null);
+
+    console.log("key:", process.env.REACT_APP_MAPS_KEY)
 
     // Ref: https://developers.google.com/maps/documentation/javascript/load-maps-js-api
     useEffect(() => { 
@@ -30,7 +33,6 @@ function LobbyPage() {
             setLoading(false);  // LocationSearchInput should only be available AFTER the API Loader is ready
         });
     }, []); // Empty dependency array => useEffect() runs only once (in theory)
-
     
     return (
         <div>

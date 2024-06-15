@@ -1,74 +1,50 @@
-Run:
-- "yarn start" for frontend
-- "yarn start-api" for backend
+# Installation:
+## Download flask dependencies via a virtual environment(venv):
 
-# Getting Started with Create React App
+### **From /groupgrub/server, run:**
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+### `python3 -m venv venv`
 
-## Available Scripts
+&emsp;&emsp;Creates a virtual environment
 
-In the project directory, you can run:
+### `source venv/bin/activate`
 
-### `npm start`
+&emsp;&emsp;Activates the virtual environment
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### `pip install -r ./requirements.txt`
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+&emsp;&emsp;Downloads dependencies through pip package installer
 
-### `npm test`
+### `deactivate`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+&emsp;&emsp;Deactivates the virtual environment, allowing you to exit
 
-### `npm run build`
+## Load your API Keys in .env files
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Find ***/groupgrub/.env/*** AND ***/groupgrub/client/.env/***
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+&emsp;&emsp;Replace placeholders with your API keys
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+# Running the Project
 
-### `npm run eject`
+From the project directory, run:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### `yarn --cwd ./client/ start-api`
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+&emsp;&emsp;Starts up the backend
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### `yarn --cwd ./client/ start`
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+&emsp;&emsp;Starts up the frontend
 
-## Learn More
+### `redis-server`
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+&emsp;&emsp;Start up redis for Flask-Sessions
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+&emsp;&emsp;This should be ran in its own terminal window
 
-### Code Splitting
+# Changes in the future:
+Switch from NoSQL to SQL
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+&emsp;&emsp;DynamoDB(NoSQL) -> AWS RDS(SQL)
 
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
