@@ -6,7 +6,6 @@ flask-cors
 flask-session
 moto[dynamodb]
 pytest
-pytest-ordering
 python-dotenv
 redis
 requests

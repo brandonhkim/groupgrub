@@ -1,5 +1,13 @@
 # Installation:
 
+## Download required JavaScript libraries via npm:
+
+### **From /groupgrub/client, run:**
+
+### `npm install`
+
+&emsp;&emsp;Uses Node Packet Manager(npm) to install all necessary libraries
+
 ## Download flask dependencies via a virtual environment(venv):
 
 ### **From /groupgrub/server, run:**
@@ -22,11 +30,17 @@
 
 ## Load your API Keys in .env files
 
-### Find ***/groupgrub/.env/*** AND ***/groupgrub/client/.env/***
+### Find **_/groupgrub/.env/_** AND **_/groupgrub/client/.env/_**
 
 &emsp;&emsp;Replace placeholders with your API keys
 
 # Running the Project
+
+### `redis-server`
+
+In its own separate terminal window,
+
+&emsp;&emsp;Start up redis for Flask-Sessions
 
 From the project directory, run:
 
@@ -38,14 +52,21 @@ From the project directory, run:
 
 &emsp;&emsp;Starts up the frontend
 
-### `redis-server`
+# Testing the Project
 
-&emsp;&emsp;Start up redis for Flask-Sessions
+From the project directory, run:
 
-&emsp;&emsp;This should be ran in its own terminal window
+### `yarn --cwd ./client/ test-api`
+
+&emsp;&emsp;Runs pytest script to test all the backend api code
+
+# Running Tests
+
+
+
 
 # Changes in the future:
+
 Switch from NoSQL to SQL
 
 &emsp;&emsp;DynamoDB(NoSQL) -> AWS RDS(SQL)
-
