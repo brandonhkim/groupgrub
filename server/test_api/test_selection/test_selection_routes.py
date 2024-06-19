@@ -24,7 +24,6 @@ def my_client():
     })
     return app.test_client()
 
-@pytest.mark.last
 class TestSelectionRoutes:
     def test_get_businesses_success(self):
         client = my_client()

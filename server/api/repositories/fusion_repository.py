@@ -75,7 +75,7 @@ class FusionRepository(Repository[Business]):
     def delete(self, email: str) -> None:
         return NotImplementedError
 
-    # TODO: code below will be moved to its own, separate test file
+'''    # TODO: code below will be moved to its own, separate test file
     def test(self):
         latitude = '33.866669'
         longitude = '-117.566666'
@@ -96,7 +96,4 @@ class FusionRepository(Repository[Business]):
         print(url)
         return businesses
 
-
-
-
-        
+        '''

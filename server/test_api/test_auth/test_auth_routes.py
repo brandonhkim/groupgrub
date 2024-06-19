@@ -25,7 +25,6 @@ def my_app():
 def my_client(my_app):
     return my_app.test_client()
 
-@pytest.mark.second_to_last
 class TestAuthRoutes():
     def test_register_success(self, my_client):
         response = my_client.post("/auth/register", json={
