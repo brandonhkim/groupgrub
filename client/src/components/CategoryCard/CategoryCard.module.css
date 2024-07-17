@@ -1,0 +1,16 @@
+.cardContainer {
+    position: relative;
+    border: black 2px solid;
+    text-align: center;
+    width: 100px;
+    margin: 6px;
+}
+
+.removeBtn {
+    border: none;
+    background: none;
+    position: absolute;
+    color: red;
+    top: -2px;
+    right: -5px;
+}

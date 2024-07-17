@@ -5,19 +5,19 @@ from .mock_repository import MockRepository
 class Business:
     name: str
     categories: list[str]
-    rating: float
+    price: int
     phone: str
 
-    def __init__(self, name: str, categories: list[str], rating: float, phone: str):
+    def __init__(self, name: str, categories: list[str], price: int, phone: str):
         self.name = name
         self.categories = categories
-        self.rating = rating
+        self.price = price
         self.phone = phone
     
     def __str__(self):
         return (
             "name: " + self.name + '\n' +
-            str(self.rating) + " stars" + '\n' + 
+            str(self.price) + '\n' + 
             "categories: " + str(self.categories) + '\n' +
             "phone: " + self.phone + '\n'
         )
@@ -25,26 +25,30 @@ class Business:
 
 class MockFusionRepository(MockRepository[Business]):
     def __init__(self):
-        burgers = Business(name="burgers", categories=["fast+food", "fried", "meat"], rating=5.0, phone="burgers#")
-        fries = Business(name="fries", categories=["fast+food", "fried"], rating=3.0, phone="fries#")
-        steaks = Business(name="steaks", categories=["meat"], rating=1.0, phone="steaks#")
-        grapes = Business(name="grapes", categories=["fruit"], rating=4.0, phone="grapes#")
+        burgers = Business(name="burgers", categories=["fast+food", "fried", "meat"], price=2, phone="burgers#")
+        fries = Business(name="fries", categories=["fast+food", "fried"], price=2, phone="fries#")
+        steaks = Business(name="steaks", categories=["meat"], price=4, phone="steaks#")
+        grapes = Business(name="grapes", categories=["fruit"], price=1, phone="grapes#")
 
-        self.businesses = {
+        self.businessMap = {
             "fried": [burgers, fries],
             "meat": [burgers, steaks],
             "fruit": [grapes],
             "fast+food": [burgers]
         }
 
+
     def get(self, email: str) -> Business:
         raise NotImplementedError
     
-    def get_all(self, geolocation: dict, categories: list[str], num_results: int) -> list[Business]:
+    def get_all(self, geolocation: dict, categories: list[str], price: int, num_results: int) -> list[Business]:
         businesses = []
         for category in categories:
-            if category in self.businesses:
-                businesses.extend(self.businesses[category])
+            for business in self.businessMap[category]:
+                if len(businesses) > num_results: 
+                    break
+                if business.price <= int(price[-1]):
+                    businesses.append(business)
         return businesses
     
     def add(self, **kwargs: object) -> None:

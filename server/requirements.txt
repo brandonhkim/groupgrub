@@ -1,10 +1,13 @@
 boto3
 botocore
+eventlet
 flask
 flask-bcrypt
 flask-cors
 flask-session
+flask-socketio
 moto[dynamodb]
+nanoid
 pytest
 python-dotenv
 redis

@@ -1,4 +1,4 @@
-class TableTemplate:
+class UserTableTemplate:
     KeySchema = [
         {
             'AttributeName': 'id',
@@ -35,7 +35,7 @@ class TableTemplate:
         {
             'AttributeName': 'email',
             'AttributeType': 'S'
-        },
+        }
     ]
     ProvisionedThroughput = {
             'ReadCapacityUnits': 5,

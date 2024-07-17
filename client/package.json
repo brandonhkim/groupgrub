@@ -4,21 +4,32 @@
   "private": true,
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.6",
+    "@socket.io/redis-adapter": "^8.3.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "dotenv": "^16.4.5",
     "downshift": "^9.0.6",
+    "heap-js": "^2.5.0",
+    "install": "^0.13.0",
+    "ioredis": "^5.4.1",
+    "nanoid": "^5.0.7",
+    "npm": "^10.8.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-hot-toast": "^2.4.1",
+    "react-router-dom": "^6.23.1",
     "react-scripts": "^5.0.1",
+    "react-swipeable": "^7.0.1",
     "save": "^2.9.0",
+    "socket.io": "^4.7.5",
+    "socket.io-client": "^4.7.5",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
-    "start-api": "cd ../server/ && venv/bin/flask run --no-debugger",
-    "test-api": "cd ../server/ && source venv/bin/activate && python3 -m pytest -v -W ignore::DeprecationWarning && deactivate",
+    "start-api": "cd ../server/ && venv/bin/python3.12 -m api.api",
+    "test-api": "cd ../server/ && source venv/bin/activate && python3 -m pytest -vv -W ignore::DeprecationWarning && deactivate",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -41,7 +52,7 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:5000",
+  "proxy": "http://127.0.0.1:5000",
   "devDependencies": {
     "dotenv-webpack": "^8.1.0"
   }

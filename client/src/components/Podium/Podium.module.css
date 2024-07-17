@@ -1,0 +1,64 @@
+.container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    border: 2px solid black;
+    width: 600px;
+    height: 600px;
+}
+
+.goldPodium {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: 70%;
+    width: 180px;
+    margin-bottom: 0;
+    background-color: goldenrod;
+}
+
+.silverPodium {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: 55%;
+    width: 180px;
+    background-color: grey;
+
+}
+
+.bronzePodium {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: 40%;
+    width: 180px;
+    background-color: brown;
+
+}
+
+.businessInfo {
+    position: absolute;
+    top: -70px;
+}
+
+.businessInfo > * {
+    margin: 0 auto;
+}
+
+.popularityCnt {
+    padding-top: 100px;
+    font-size: 1rem;
+}
+
+img {
+    user-drag: none; 
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+}

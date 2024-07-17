@@ -4,18 +4,20 @@ from dataclasses import dataclass
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from .repository import Repository
-from .templates.table_template import TableTemplate
+from .templates.user_table_template import UserTableTemplate
 
 @dataclass
 class User:
     id: str
     email: str
     password: str
+    preferences: dict
 
-    def __init__(self, email: str, password: str, id: str=None):
+    def __init__(self, email: str, password: str, preferences: dict, id: str=None):
         self.id = id if id else uuid4().hex
         self.email = email
         self.password = password
+        self.preferences = preferences
 
 
 class UserRepository(Repository[User]):
@@ -28,10 +30,10 @@ class UserRepository(Repository[User]):
         try:
             table = self.dynamodb.create_table(
                 TableName = 'UserTable',
-                KeySchema = TableTemplate.KeySchema,
-                GlobalSecondaryIndexes = TableTemplate.GlobalSecondaryIndexes,
-                AttributeDefinitions = TableTemplate.AttributeDefinitions,
-                ProvisionedThroughput = TableTemplate.ProvisionedThroughput
+                KeySchema = UserTableTemplate.KeySchema,
+                GlobalSecondaryIndexes = UserTableTemplate.GlobalSecondaryIndexes,
+                AttributeDefinitions = UserTableTemplate.AttributeDefinitions,
+                ProvisionedThroughput = UserTableTemplate.ProvisionedThroughput
             )
             # Wait until the table exists.
             table.wait_until_exists()
@@ -47,6 +49,7 @@ class UserRepository(Repository[User]):
                 'id': kwargs['id'],
                 'email':  kwargs['email'],
                 'password': kwargs['password'],
+                'preferences': kwargs['preferences']
             }
             self.table.put_item(Item=item)
 
@@ -73,13 +76,27 @@ class UserRepository(Repository[User]):
             return None
         item = response['Item'] if 'Item' in response else response['Items'][0]
         
-        return User(email=item['email'], password=item['password'], id=item['id'])
+        return User(email=item['email'], password=item['password'], id=item['id'], preferences=item['preferences'])
     
     # NOTE: very expensive operation; should never need to call this
     def get_all(self) -> list[User]:
         return NotImplementedError
 
-    def update(self, id: str, email: str, new_password: set) -> None:
+    def update(self, id: str, email: str, new_preferences: dict) -> None:
+        for k, v in new_preferences.items():
+            response = self.table.update_item(
+                Key={
+                    'id': id,
+                    'email': email,
+                },
+                UpdateExpression = "SET preferences.#name = :preference",
+                ExpressionAttributeNames = { "#name" : k },
+                ExpressionAttributeValues = { ":preference" : v },
+                ConditionExpression = "attribute_not_exists(preferences.#name)",
+            )
+        return response["Attributes"]
+    
+    def update_password(self, id: str, email: str, new_password: str) -> None:
         response = self.table.update_item(
             Key={
                 'id': id,
@@ -90,6 +107,8 @@ class UserRepository(Repository[User]):
                 ':val1': new_password
             }
         )
+        return response["Attributes"]
+
 
     def delete(self, id: str, email: str) -> None:
         self.table.delete_item(

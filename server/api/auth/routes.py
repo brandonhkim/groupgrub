@@ -1,10 +1,24 @@
 from flask import Blueprint, request, jsonify, session
 from ..api import bcrypt
 from ..repositories.user_repository import User, UserRepository
-from ..repositories.preference_repository import Preference, PreferenceRepository
 
-def create_blueprint(ur: UserRepository, pr: PreferenceRepository)->Blueprint:
+def create_blueprint(ur: UserRepository)->Blueprint:
     bp = Blueprint('auth', __name__)
+
+    @bp.route("/set-session-ID", methods=["POST"])
+    def set_nickname():
+        socketID = request.json["socketID"]
+        session["session_id"] = socketID
+        session.modified = True
+        return jsonify({ "session_id": socketID })
+
+    @bp.route("/get-session-ID", methods=["GET"])
+    def get_nickname():
+        session_id = session.get("session_id")
+        print(session_id)
+        print(session.keys())
+        return jsonify({ "session_id": session_id }) 
+
 
     @bp.route("/@me", methods=["GET"])
     def get_current_user():
@@ -26,6 +40,7 @@ def create_blueprint(ur: UserRepository, pr: PreferenceRepository)->Blueprint:
     def register_user():
         email = request.json["email"]
         password = request.json["password"]
+        preferences = request.json["preferences"]
 
         # Email already in use
         if ur.get(email=email):
@@ -36,10 +51,8 @@ def create_blueprint(ur: UserRepository, pr: PreferenceRepository)->Blueprint:
                 }), 409
         
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-        new_user = User(email=email, password=hashed_password)
-        new_preference = Preference(id=new_user.id, email=email)
+        new_user = User(email=email, password=hashed_password, preferences=preferences)
         ur.add(**vars(new_user))
-        pr.add(**vars(new_preference))
 
         session["user_id"] = new_user.id
 
@@ -98,7 +111,7 @@ def create_blueprint(ur: UserRepository, pr: PreferenceRepository)->Blueprint:
 
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
-        ur.update(id=user_id, email=email, new_password=hashed_password)
+        ur.update_password(id=user_id, email=email, new_password=hashed_password)
         return jsonify({
             "id": user_id,
             "email": email,
@@ -116,9 +129,7 @@ def create_blueprint(ur: UserRepository, pr: PreferenceRepository)->Blueprint:
                 }), 401
 
         ur.delete(id=user_id, email=user.email)
-        pr.delete(id=user_id, email=user.email)
-        return jsonify(
-                { "status": "SUCCESS" }), 200
+        return jsonify({ "status": "SUCCESS" }), 200
 
     @bp.route("/get-preferences", methods=["GET"])
     def get_user_preferences():
@@ -131,11 +142,11 @@ def create_blueprint(ur: UserRepository, pr: PreferenceRepository)->Blueprint:
                     "error": "Invalid session token"
                 }), 401
         
-        preference = pr.get(id=user_id)
+        user = ur.get(id=user_id)
         return jsonify({
-            "id": preference.id,
-            "email": preference.email,
-            "preferences": list(preference.preferences)
+            "id": user.id,
+            "email": user.email,
+            "preferences": user.preferences
         }) 
 
     @bp.route("/update-preferences", methods=["POST"])
@@ -145,19 +156,21 @@ def create_blueprint(ur: UserRepository, pr: PreferenceRepository)->Blueprint:
         preferences = request.json["preferences"]
 
         # Error: could not find entry in table
-        if not pr.get(id=user_id, email=email):
+        if not ur.get(id=user_id, email=email):
             return jsonify(
                 {
                     "status": "ERROR",
                     "error" : "Invalid session token"
                 }), 401
 
-        response = pr.update(id=user_id, email=email, new_preferences=set(preferences))
+        ur.update(id=user_id, email=email, new_preferences=preferences)
+
+        updated_user = ur.get(id=user_id, email=email)
 
         return jsonify({
             "id": user_id,
             "email": email,
-            "preferences": list(response['preferences'])
+            "preferences": updated_user.preferences
         })
 
     return bp

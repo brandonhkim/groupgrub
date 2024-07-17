@@ -7,11 +7,13 @@ class User:
     id: str
     email: str
     password: str
+    preferences: dict
 
-    def __init__(self, email: str, password: str, id: str=None):
+    def __init__(self, email: str, password: str, preferences: dict, id: str=None):
         self.id = id if id else uuid4().hex
         self.email = email
         self.password = password
+        self.preferences = preferences
 
 
 class MockUserRepository(MockRepository[User]):
@@ -36,16 +38,36 @@ class MockUserRepository(MockRepository[User]):
         id = kwargs['id']
         email = kwargs['email']
         password = kwargs['password']
+        preferences = kwargs['preferences']
 
-        user = User(id=id, email=email, password=password)
+        user = User(id=id, email=email, password=password, preferences=preferences)
 
         self.users_id[id] = user
         self.users_email[email] = user
     
     def update(self, id: str, email: str, **kwargs: object) -> None:
-        password = kwargs['new_password']
+        if id not in self.users_id or email not in self.users_email:
+            return
+        
+        old_user = self.users_id[id] if id else self.users_email[email]
+        password = old_user.password
+        old_user.preferences.update(kwargs['new_preferences'])
+        preferences = old_user.preferences
 
-        user = User(id=id, email=email, password=password)
+        user = User(id=id, email=email, password=password, preferences=preferences)
+        
+        self.users_id[id] = user
+        self.users_email[email] = user
+    
+    def update_password(self, id: str, email: str, **kwargs: object) -> None:
+        if id not in self.users_id or email not in self.users_email:
+            return
+        
+        old_user = self.users_id[id] if id else self.users_email[email]
+        preferences = old_user.preferences
+        new_password = kwargs['new_password']
+
+        user = User(id=id, email=email, password=new_password, preferences=preferences)
         
         self.users_id[id] = user
         self.users_email[email] = user

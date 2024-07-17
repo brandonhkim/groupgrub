@@ -3,27 +3,32 @@ from dataclasses import dataclass
 from .repository import Repository
 from .templates.fusion_header import fusion_header
 
-# TODO: ensure that 'search?term=' suffix is correct
-ENDPOINT = 'https://api.yelp.com/v3/businesses/search?term='
+# TODO: ensure that 'search?term=' suffix is correct    
+ENDPOINT = 'https://api.yelp.com/v3/businesses/search?categories='
 
 @dataclass
 class Business:
     name: str
     categories: list[str]
-    rating: float
+    image_url: str
+    price: int
+    address: str
     phone: str
 
-    def __init__(self, name: str, categories: list[str], rating: float, phone: str):
+    def __init__(self, name: str, categories: list[str], image_url: str, price: int, address: str, phone: str):
         self.name = name
         self.categories = categories
-        self.rating = rating
+        self.image_url =image_url
+        self.price = price
+        self.address = address
         self.phone = phone
     
     def __str__(self):
         return (
             "name: " + self.name + '\n' +
-            str(self.rating) + " stars" + '\n' + 
+            str(self.price) + '\n' + 
             "categories: " + str(self.categories) + '\n' +
+            "address:" +  self.address + '\n' +
             "phone: " + self.phone + '\n'
         )
 
@@ -38,16 +43,17 @@ class FusionRepository(Repository[Business]):
     def get(self, email: str) -> Business:
         return NotImplementedError
     
-    def get_all(self, geolocation: dict, categories: list[str], num_results: int) -> list[Business]:
+    def get_all(self, geolocation: dict, categories: list[str], price: int, num_results: int, radius: int) -> list[Business]:
         latitude, longitude = geolocation['latitude'], geolocation['longitude']
 
         # build the query url
-        formatted_cats = '&'.join(categories)
+        formatted_cats = '&categories='.join(categories)
+        formatted_price = f'&price={price}'
         formatted_location = f'&latitude={latitude}&longitude={longitude}'
-        formatted_limiter = f'&limit={num_results}&offset=0'
-        formatted_url = ENDPOINT + formatted_cats + formatted_location + formatted_limiter
-
-
+        formatted_radius = f'&radius={radius}'
+        formatted_limiter = f'&sort_by=best_match&limit={num_results}'
+        formatted_url = ENDPOINT + formatted_cats + formatted_price + formatted_location + formatted_radius + formatted_limiter
+        print(formatted_url)
         # catch exceptions
         try:
             r = requests.get(formatted_url, headers=self.headers)
@@ -59,10 +65,17 @@ class FusionRepository(Repository[Business]):
         r = r.json()['businesses']
         businesses = []
         for obj in r:
+            # Join list of address lines to a singular string
+            address = obj['location']['display_address']
+            formatted_address = 'Address not provided'
+            if (address and all(isinstance(ele, str) for ele in address)):
+                formatted_address = '\n'.join(address)
             data = {
                 'name': obj['name'],
                 'categories': obj['categories'], 
-                'rating': obj['rating'], 
+                'image_url': obj['image_url'],
+                'price': obj['price'], 
+                'address': formatted_address,
                 'phone': obj['phone'], 
             }  
             businesses.append(Business(**data))
@@ -75,25 +88,3 @@ class FusionRepository(Repository[Business]):
     def delete(self, email: str) -> None:
         return NotImplementedError
 
-'''    # TODO: code below will be moved to its own, separate test file
-    def test(self):
-        latitude = '33.866669'
-        longitude = '-117.566666'
-        url = ENDPOINT + 'mcdonalds' + f'&latitude={latitude}&longitude={longitude}&limit=3&offset=0'
-
-        r = requests.get(url, headers=self.headers).json()['businesses']
-        businesses = []
-        
-        for business in r:
-            significant = {
-                'rating': business['rating'], 
-                'phone': business['phone'], 
-                'categories': business['categories'], 
-                'name': business['name']
-            }
-            businesses.append(Business(**significant))
-            
-        print(url)
-        return businesses
-
-        '''

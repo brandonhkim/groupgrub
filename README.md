@@ -67,6 +67,10 @@ From the project directory, run:
 
 # Changes in the future:
 
-Switch from NoSQL to SQL
+Improve Synchronous Countdown Timers
+
+Consider splitting LobbyTable -> LobbySettingsTable + LobbyDataTable
+
+Switch from NoSQL to SQL (for experience)
 
 &emsp;&emsp;DynamoDB(NoSQL) -> AWS RDS(SQL)
