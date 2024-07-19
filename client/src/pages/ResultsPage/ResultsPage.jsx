@@ -102,7 +102,7 @@ function ResultsPage() {
                     /* ~ Iteratively render vote count... ~ */
                     <ol>
                         { businesses.map(element => 
-                            <li>{element[0].name} {element[1]}</li>
+                            <li key={`${element[0].name}${element[1]}`}>{element[0].name} {element[1]}</li>
                         )}
                     </ol>
                 }

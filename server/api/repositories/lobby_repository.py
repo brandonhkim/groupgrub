@@ -153,30 +153,33 @@ class LobbyRepository(Repository[Lobby]):
 
     def add_session(self, lobby_ID: str, session: dict) -> None:
         lobby = self.get(lobby_ID=lobby_ID)
-        if lobby and session not in lobby.sessions:
-            response = self.table.update_item(
-                Key={
-                    'lobby_ID': lobby_ID,
-                },
-                UpdateExpression="SET sessions = list_append(sessions, :session)",
-                ExpressionAttributeValues={':session': [{
-                    "session_info": session,
-                    "is_finished": False
-                }]},
-            )
-            return response["Attributes"] if "Attributes" in response else None
+        if lobby:
+            for cur in lobby.sessions:
+                session_info = cur["session_info"]
+                if session_info == session:
+                    return None
+        response = self.table.update_item(
+            Key={
+                'lobby_ID': lobby_ID,
+            },
+            UpdateExpression="SET sessions = list_append(sessions, :session)",
+            ExpressionAttributeValues={':session': [{
+                "session_info": session,
+                "is_finished": False
+            }]})
+        return response["Attributes"] if "Attributes" in response else None
     
     def remove_sessions(self, lobby_ID: str, session: dict) -> None:
         lobby = self.get(lobby_ID=lobby_ID)
         if lobby:
-            for i, cur in lobby.sessions:
-                if cur == session:
+            for i, cur in enumerate(lobby.sessions):
+                session_info = cur["session_info"]
+                if session_info == session:
                     response = self.table.update_item(
                         Key={
                             'lobby_ID': lobby_ID,
                         },
-                        UpdateExpression=f"REMOVE sessions[{i}]",
-                    )
+                        UpdateExpression=f"REMOVE sessions[{i}]")
                     return response["Attributes"] if "Attributes" in response else None
         return None
     

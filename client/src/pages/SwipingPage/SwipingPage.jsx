@@ -171,7 +171,7 @@ function SwipingPage() {
             <div>
                 <CountdownTimer 
                     initialTime={timestamp}
-                    timeLimit={10} 
+                    timeLimit={15} 
                     timeoutFunction={handlePhaseComplete} 
                     warningMessage={"Sending to results page..."}
                     override={isLobbyFinished} />

@@ -24,9 +24,11 @@ const ConditionalLobbyRoute = (Component, destination) => {
                 const alive = timestamp ? (new Date().getTime() - new Date(timestamp).getTime()) : MAXIMUM_LOBBY_AGE + 1;
                 const phase = await getLobbyRequest(lobbyID, "phase");
 
+                console.log(sessionInfo, sessions, joinable, timestamp, phase)
+
                 setHasCookies(sessionInfo);
                 setIsRoomOpen(joinable || sessions.some(sessionInfoEquals.bind(sessionInfo)));
-                setIsRoomExpired(!joinable && alive > MAXIMUM_LOBBY_AGE);
+                setIsRoomExpired((!joinable && phase === "setup") || alive > MAXIMUM_LOBBY_AGE);
                 setDoesPhaseMatch(destination === phase);
                 setLobbyPhase(phase);
                 setIsLoading(false);

@@ -2,14 +2,32 @@
     width: 100vw;
     height: 100vh;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
     text-align: center;
     background: var(--whites);
 }
 
-.btn {
+.vertical {
+    margin: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.preferenceContainer {
+    width: 400px;
+}
+
+.infoContainer {
+    width: 300px;
+}
+
+.codeHeading {
+    margin: 4px;
 }
 
 .buttonContainer button {

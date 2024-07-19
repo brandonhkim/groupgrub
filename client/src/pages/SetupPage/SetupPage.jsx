@@ -10,6 +10,7 @@ import LocationSearchInput from "../../components/LocationSearchInput/LocationSe
 import LobbyDropdown from "../../components/LobbyDropdown/LobbyDropdown"
 import useHostChecker from "../../hooks/useHostChecker";
 import styles from "./SetupPage.module.css"
+import PlayerList from "../../components/PlayerList/PlayerList";
 
 function SetupPage() {
     const socket = useContext(SocketContext);
@@ -70,12 +71,11 @@ function SetupPage() {
         socket.emit("LEAVE_ROOM_REQUEST", lobbyID, sessionInfo)
         navigate(`/home`, { state: { "errorMessage": "Host closed the room"}, replace: true }); 
     }, [socket, navigate]);
-    const handleSocketChange = useCallback(async () => {
-        const sessionInformation = await getLobbyRequest(lobbyID, "sessions");
-        for (const socketInfo in sessionInformation) {
-            const [name, session_ID] = socketInfo;
-        }
-    }, []);
+    const handleSocketsChange = useCallback(async () => {
+        const sessions = await getLobbyRequest(lobbyID, "sessions");
+        const nicknames = sessions.map(session => session["session_info"]["nickname"]);
+        setSockets(nicknames);
+    }, [lobbyID]);
     const handlePreferencesChange = useCallback(async () => {
         const updatedPreferences = await getLobbyRequest(lobbyID, "preferences");
         if (!updatedPreferences) { console.log("Error: problem while receiving preferences") }  // TODO: catch error
@@ -124,6 +124,9 @@ function SetupPage() {
         socket.on("LEAVE_ROOM_EARLY", handleRoomCompletion);
         socket.on("ROOM_PREFERENCES_UPDATE", handlePreferencesChange);
         socket.on("ROOM_PROGRESS_NAVIGATION", handlePreferencesFinalized);
+        socket.on("JOIN_ROOM_ACCEPTED", handleSocketsChange);
+        socket.on("LEAVE_ROOM_ACCEPTED", handleSocketsChange);
+
     
         return () => {
             // Unbind all event handlers before component destruction
@@ -131,8 +134,10 @@ function SetupPage() {
             socket.off("LEAVE_ROOM_EARLY", handleRoomCompletion);
             socket.off("ROOM_PREFERENCES_UPDATE", handlePreferencesChange);
             socket.off("ROOM_PROGRESS_NAVIGATION", handlePreferencesFinalized);  
+            socket.off("JOIN_ROOM_ACCEPTED", handleSocketsChange);
+            socket.off("LEAVE_ROOM_ACCEPTED", handleSocketsChange);
         };
-    }, [socket, handleSocketAccepted, handleRoomCompletion, handlePreferencesChange, handlePreferencesFinalized]);
+    }, [socket, handleSocketAccepted, handleRoomCompletion, handlePreferencesChange, handlePreferencesFinalized, handleSocketsChange]);
 
     /* ~ On page load, receive lobby preferences from the database + reset session swiping data ~ */
     useEffect(() => { 
@@ -155,62 +160,65 @@ function SetupPage() {
         <div>
             { <PlacesLoader setLoading={setLoading}/> }
             <div className={styles.container}>
-                <div>
-
-                </div>
-                { 
-                    /* ~ "If Places Loader is loaded..." ~ */
-                    isHost && !isLoading && 
-                    <LocationSearchInput
-                        coordinates={coordinates}
-                        setCoordinates={setCoordinates} 
-                        isHost={isHost} /> 
-                }
-                
-
-            {       /* ~ Note: Using dropdowns.map() causes unoptimal component rerendering ~ */      }
-                <div className={styles.dropdownContainer}>
-                    {   /* ~ Number of results dropdown... ~ */   }
-                        <LobbyDropdown
-                            key = { dropdowns[0].prefix }
-                            modifiable= { isHost }
-                            option = { numResults }
-                            setOption = { dropdowns[0].handler }
-                            heading = { dropdowns[0].heading }
-                            prefix = { dropdowns[0].prefix }
-                            minVal = { dropdowns[0].minRange }
-                            maxVal = { dropdowns[0].maxRange }
-                            increment = { dropdowns[0].incVal } />
-
-                    {   /* ~ Price range dropdown... ~ */   }
-                    <LobbyDropdown
-                        key = { dropdowns[1].prefix }
-                        modifiable= { isHost }
-                        option = { priceRange }
-                        setOption = { dropdowns[1].handler }
-                        heading = { dropdowns[1].heading }
-                        prefix = { dropdowns[1].prefix }
-                        minVal = { dropdowns[1].minRange }
-                        maxVal = { dropdowns[1].maxRange }
-                        increment = { dropdowns[1].incVal } />
-
-                    {   /* ~ Drive radius dropdown... ~ */   }
-                        <LobbyDropdown
-                        key = { dropdowns[2].prefix }
-                        modifiable= { isHost }
-                        option = { driveRadius }
-                        setOption = { dropdowns[2].handler }
-                        heading = { dropdowns[2].heading }
-                        prefix = { dropdowns[2].prefix }
-                        minVal = { dropdowns[2].minRange }
-                        maxVal = { dropdowns[2].maxRange }
-                        increment = { dropdowns[2].incVal } />
+                <div className={`${styles.vertical} ${styles.preferenceContainer}`}>
+                    { 
+                        /* ~ "If Places Loader is loaded..." ~ */
+                        isHost && !isLoading && 
+                        <LocationSearchInput
+                            coordinates={coordinates}
+                            setCoordinates={setCoordinates} 
+                            isHost={isHost} /> 
+                    }
                     
+
+                {       /* ~ Note: Using dropdowns.map() causes unoptimal component rerendering ~ */      }
+                    <div className={styles.dropdownContainer}>
+                        {   /* ~ Number of results dropdown... ~ */   }
+                            <LobbyDropdown
+                                key = { dropdowns[0].prefix }
+                                modifiable= { isHost }
+                                option = { numResults }
+                                setOption = { dropdowns[0].handler }
+                                heading = { dropdowns[0].heading }
+                                prefix = { dropdowns[0].prefix }
+                                minVal = { dropdowns[0].minRange }
+                                maxVal = { dropdowns[0].maxRange }
+                                increment = { dropdowns[0].incVal } />
+
+                        {   /* ~ Price range dropdown... ~ */   }
+                        <LobbyDropdown
+                            key = { dropdowns[1].prefix }
+                            modifiable= { isHost }
+                            option = { priceRange }
+                            setOption = { dropdowns[1].handler }
+                            heading = { dropdowns[1].heading }
+                            prefix = { dropdowns[1].prefix }
+                            minVal = { dropdowns[1].minRange }
+                            maxVal = { dropdowns[1].maxRange }
+                            increment = { dropdowns[1].incVal } />
+
+                        {   /* ~ Drive radius dropdown... ~ */   }
+                            <LobbyDropdown
+                            key = { dropdowns[2].prefix }
+                            modifiable= { isHost }
+                            option = { driveRadius }
+                            setOption = { dropdowns[2].handler }
+                            heading = { dropdowns[2].heading }
+                            prefix = { dropdowns[2].prefix }
+                            minVal = { dropdowns[2].minRange }
+                            maxVal = { dropdowns[2].maxRange }
+                            increment = { dropdowns[2].incVal } />
+                        
+                    </div>
+                    <div className={styles.buttonContainer}>
+                        {   /* ~ Host determines completion of Lobby Phase ~ */ }
+                        <button className={styles.btn} id="homeBtn" onClick={homeBtnOnClick}>home</button>
+                        { isHost && <button className={styles.btn} id="readyBtn" onClick={readyBtnOnClick}> ready </button> }
+                    </div>
                 </div>
-                <div className={styles.buttonContainer}>
-                    {   /* ~ Host determines completion of Lobby Phase ~ */ }
-                    <button className={styles.btn} id="homeBtn" onClick={homeBtnOnClick}>home</button>
-                    { isHost && <button className={styles.btn} id="readyBtn" onClick={readyBtnOnClick}> ready </button> }
+                <div className={`${styles.vertical} ${styles.infoContainer}`} >
+                    <h1 className={styles.codeHeading}>Lobby Code: {lobbyID}</h1>
+                    <PlayerList players={sockets}/>
                 </div>
             </div>
         </div>

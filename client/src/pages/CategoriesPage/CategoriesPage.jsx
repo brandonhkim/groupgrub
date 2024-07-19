@@ -32,7 +32,7 @@ function CategoriesPage() {
         const categories = await getLobbyRequest(lobbyID, "categories");
         const filteredCategories = new Set();
         for (let i=0; i<categories.length; i++) {
-            const { name, sockets } = categories[i]
+            const { name="", sockets=[] } = categories[i]
             if (sockets.includes(sessionInfo)) {
                 filteredCategories.add(name);
             }
@@ -114,11 +114,12 @@ function CategoriesPage() {
             if (yelpSelection && yelpSelection.length === parseInt(numResults)) {
                 await postLobbyRequest(lobbyID, "businesses", yelpSelection);
                 await postLobbyRequest(lobbyID, "phase", "swiping");
-                socket.emit("LOBBY_NAVIGATION_UPDATE", lobbyID, `/lobby/${lobbyID}/swiping`, "")
+                socket.emit("LOBBY_NAVIGATION_UPDATE", lobbyID, `/lobby/${lobbyID}/swiping`, "");
             }
             // Otherwise, communicate phase regression and try again
             else {
                 await postLobbyRequest(lobbyID, "phase", "setup");
+                await postLobbyRequest(lobbyID, "joinable", true);
                 socket.emit("LOBBY_NAVIGATION_UPDATE", lobbyID, `/lobby/${lobbyID}/setup`, "Not enough results, please adjust parameters")
             }
         }

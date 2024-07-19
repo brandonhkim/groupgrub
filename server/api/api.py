@@ -35,10 +35,11 @@ def create_app(lr: LobbyRepository=LobbyRepository(), fr: FusionRepository=Fusio
             join_room(lobby_ID)
             
             lr.add_session(lobby_ID=lobby_ID, session=session)
-            emit("JOIN_ROOM_ACCEPTED", to=lobby_ID, broadcast=True, include_self=False)
+            emit("JOIN_ROOM_ACCEPTED", to=lobby_ID, broadcast=True)
             
             @socketio.on("disconnect")
             def disconnect():
+                print("disconnect", session)
                 lobby = lr.get(lobby_ID=lobby_ID)
                 lr.remove_sessions(lobby_ID=lobby_ID, session=session)
                 if session == lobby.host:
@@ -46,12 +47,12 @@ def create_app(lr: LobbyRepository=LobbyRepository(), fr: FusionRepository=Fusio
                     lr.update_host(lobby_ID=lobby_ID, host="")
                     emit("LEAVE_ROOM_EARLY", to=lobby_ID, broadcast=True)
                 else:
-                    emit("LEAVE_ROOM_ACCEPTED", to=lobby_ID, broadcast=True, include_self=False)
+                    emit("LEAVE_ROOM_ACCEPTED", to=lobby_ID, broadcast=True)
 
 
         @socketio.on("LEAVE_ROOM_REQUEST")
         def exit_room(lobby_ID, session):
-            emit("LEAVE_ROOM_ACCEPTED", to=lobby_ID, broadcast=True, include_self=False)
+            emit("LEAVE_ROOM_ACCEPTED", to=lobby_ID, broadcast=True)
             leave_room(lobby_ID)
             lr.remove_sessions(lobby_ID=lobby_ID, session=session)
 
