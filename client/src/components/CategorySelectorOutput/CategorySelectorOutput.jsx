@@ -1,46 +1,44 @@
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import { SocketContext } from '../../context/socket';
+import { updateLobbyCategory } from '../../utils/fetches';
 import CategoryCard from '.././CategoryCard/CategoryCard';
-import { requestRemoveCategory } from '../../utils/FetchRequests';
 
-function CategorySelectorOutput({ allCategories, setAllCategories, lobbyID, sessionID }) {
+
+function CategorySelectorOutput({ myCategories, setMyCategories, allCategories, setAllCategories, lobbyID, sessionInfo }) {
     const socket = useContext(SocketContext);
 
-    const removeFromAllCategories = (index) => {
-        const newCategories = allCategories ? [...allCategories] : [];
-        const removalIndex = newCategories[index]["sockets"].indexOf(sessionID);
-        if (removalIndex > -1) { 
-            newCategories[index]["sockets"].splice(removalIndex, 1); 
-        }
-        if (newCategories[index]["sockets"].length === 0) {
-            newCategories.splice(index, 1);
-        }
-        return newCategories;
-    }
+    const deleteSocketCategory = async (index, categoryName) => {
+        const { updated_categories=[], is_unused=false } = await updateLobbyCategory(lobbyID, sessionInfo, categoryName, false, index);
+        socket.emit("ROOM_CATEGORY_CHANGE", lobbyID);
+        const newCategories = new Set(myCategories)
+        newCategories.delete(categoryName);
+        setMyCategories(newCategories);
 
-    const deleteSocketCategory = (index, categoryName) => {
-        const fetchRequest = async () => {
-            await requestRemoveCategory(lobbyID, sessionID, categoryName, index);
-            socket.emit("ROOM_CATEGORY_CHANGE", lobbyID);
+        if (is_unused) {
+
         }
-        fetchRequest()
-        
-        // Update state locally instead of fetching
-        setAllCategories(removeFromAllCategories(index))
+        setAllCategories(updated_categories)
     }
     
     return (
         <div>
             {
                 allCategories && allCategories.map((obj, i) => {
-                    const name = obj["name"]
-                    const sockets = obj["sockets"]
+                    const name = obj["category"]
+                    const sessions = obj["sessions"]
+                    let isMine = false;
+                    for (const session of sessions) {
+                        if (sessionInfo && session["nickname"] === sessionInfo["nickname"] && session["session_ID"] === sessionInfo["session_ID"]) {
+                            isMine = true;
+                            break;
+                        }
+                    }
                     return (
                         <CategoryCard 
                             key={name + 'Card'} 
                             lobbyID={lobbyID}
                             categoryName={name} 
-                            categoryIsMine={sockets && sockets.includes(sessionID)} 
+                            categoryIsMine={isMine} 
                             deleteSocketCategory={deleteSocketCategory}
                             index={i} />
                     )

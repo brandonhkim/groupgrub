@@ -1,3 +1,86 @@
-.App {
-  text-align: center;
+:root {
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    --whites: #f0f0f0;
+    --green: #399918;
+    --light-green: #ECFFE6;
+    --peach: #FFAAAA;
+    --red: #FF7777;
+    color: var(--red);
+    font-family: "Quicksand", sans-serif;
+}
+
+*,
+*::before,
+*::after {
+    -webkit-box-sizing: inherit;
+    box-sizing: inherit;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+}  
+
+*::-webkit-input-placeholder {
+    text-align: center;
+    font-size: 1rem;
+    color: var(--whites);
+}
+*:-moz-placeholder {
+    /* FF 4-18 */
+    text-align: center;
+    font-size: 1rem;
+    color: var(--whites);
+    opacity: 1;
+}
+*::-moz-placeholder {
+    /* FF 19+ */
+    text-align: center;
+    font-size: 1rem;
+    color: var(--whites);
+    opacity: 1;
+}
+*:-ms-input-placeholder {
+    /* IE 10+ */
+    text-align: center;
+    font-size: 1rem;
+    color: var(--whites);
+}
+*::-ms-input-placeholder {
+    /* Microsoft Edge */
+    text-align: center;
+    font-size: 1rem;
+    color: var(--whites);
+}
+*::placeholder {
+    /* modern browser */
+    text-align: center;
+    font-size: 1rem;
+    color: var(--whites);
+}
+
+button {
+    border: 4px solid var(--peach);
+    border-radius: 6px;
+    background: var(--peach);
+    color: var(--whites);
+    font-size: 1rem;
+    padding: 2px 4px;
+    margin: 2px;
+}
+
+input {
+    border: 4px solid var(--peach);
+    border-radius: 6px;
+    background: var(--peach);
+    text-align: center;
+    color: var(--whites);
+    font-size: 1rem;
+    padding: 4px;
+    margin: 2px;
+}
+
+input:focus {
+    outline: none;
 }

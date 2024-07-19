@@ -45,7 +45,7 @@ def late_finished_swiping(lobbyID):
     emit("ROOM_VOTE_UPDATE", to=lobbyID, broadcast=True, include_self=False)
 
 @socketio.on("LOBBY_NAVIGATION_UPDATE")
-def lobby_navigation_update(lobbyID, path):
+def lobby_navigation_update(lobbyID, path, message):
     """event listener for when room's host updates phase"""
     print("navigation update")
-    emit("ROOM_PROGRESS_NAVIGATION", path, to=lobbyID, broadcast=True)
+    emit("ROOM_PROGRESS_NAVIGATION", (path, message), to=lobbyID, broadcast=True)

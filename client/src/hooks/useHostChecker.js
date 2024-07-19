@@ -1,17 +1,14 @@
 import { useEffect, useState } from "react";
-import {
-    requestGetHost,
-    requestGetSessionID
-} from '../utils/FetchRequests';
+import { getLobbyRequest, getSessionRequest } from "../utils/fetches";
+import sessionInfoEquals from "../utils/sessionInfoEquals";
 
 function useHostChecker(lobbyID) {
     const [isHost, setIsHost] = useState(false);
     useEffect(() => {
         const determineHost = async () => {
-            const sessionID = await requestGetSessionID();
-            const lobbyHost = await requestGetHost(lobbyID);
-            console.log("isHost:", sessionID, "===", lobbyHost);
-            setIsHost(sessionID === lobbyHost);
+            const sessionInfo = await getSessionRequest("info");
+            const lobbyHost = await getLobbyRequest(lobbyID, "host");
+            setIsHost(sessionInfoEquals(lobbyHost, sessionInfo));
         }
         determineHost();
     }, [lobbyID]);

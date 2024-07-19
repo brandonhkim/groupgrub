@@ -74,7 +74,7 @@ def create_blueprint(fr: FusionRepository)->Blueprint:
         # Extract category name from array of objects
         categories = []
         for category in categoriesArr:
-            categories.append(category["name"].lower())
+            categories.append(category["category"].lower())
 
         # remove whitespace from categories
         for i in range(len(categories)):

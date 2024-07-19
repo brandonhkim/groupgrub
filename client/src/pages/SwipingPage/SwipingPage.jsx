@@ -3,24 +3,12 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useSwipeable } from 'react-swipeable';
 import { SocketContext } from '../../context/socket';
 
-import { 
-    requestGetBusinesses, 
-    requestGetTimestamp, 
-    requestGetSessionID,
-    requestUpdateTimestamp,
-    requestUpdatePhase, 
-    requestUpdateSockets, 
-    requestUpdateVotes,
-    requestGetSessionIndex,
-    requestGetSessionVotes,
-    requestSetSessionIndex,
-    requestSetSessionVotes,
-} from '../../utils/FetchRequests';
 import BusinessCard from '../../components/BusinessCard/BusinessCard';
 import CountdownTimer from '../../components/CountdownTimer/CountdownTimer';
 import useHostChecker from '../../hooks/useHostChecker';
 import toast from 'react-hot-toast';
 import styles from './SwipingPage.module.css';
+import { getLobbyRequest, getSessionRequest, postLobbyRequest, postSessionRequest, updateLobbySession } from '../../utils/fetches';
 
 function SwipingPage() {
     const socket = useContext(SocketContext);
@@ -30,6 +18,7 @@ function SwipingPage() {
     const isHost = useHostChecker(lobbyID);
 
     /* ~ State variables + setters ~ */
+    const [sessionInfo, setSessionInfo] = useState()
     const [isLoading, setIsLoading] = useState(true);
     const [isLobbyFinished, setIsLobbyFinished] = useState(false);
     const [timestamp, setTimestamp] = useState(new Date());     // Temporary Date obj for Countdown Timer initialization
@@ -46,13 +35,13 @@ function SwipingPage() {
     /* ~ Setup for gesture handlers ~ */
     const handlers = useSwipeable({
         onSwipedLeft: async () => { 
-            await requestSetSessionIndex(swipeIndex + 1);
+            await postSessionRequest("index", swipeIndex+1);
             setSwipeIndex(swipeIndex + 1);
         },   
         onSwipedRight: async () => {
             const newVotes = incrementedVote(swipeIndex);
-            await requestSetSessionIndex(swipeIndex + 1);
-            await requestSetSessionVotes(newVotes);
+            await postSessionRequest("index", swipeIndex+1);
+            await postSessionRequest("votes", newVotes);
             setSwipeIndex(swipeIndex + 1);
             setVotes(newVotes);
         },
@@ -63,19 +52,22 @@ function SwipingPage() {
 
     /* ~ Socket event handlers ~ */
     const handleSocketAccepted = useCallback(async () => { 
-        const sessionID = await requestGetSessionID();
-        socket.emit("JOIN_ROOM_REQUEST", lobbyID, sessionID) 
+        const sessionInfo = await getSessionRequest("info");
+        setSessionInfo(sessionInfo);
+        socket.emit("JOIN_ROOM_REQUEST", lobbyID, sessionInfo) 
     }, [lobbyID, socket]);
-    const handleRoomCompletion =  useCallback(async () => { 
-        const sessionID = await requestGetSessionID();
-        socket.emit("LEAVE_ROOM_REQUEST", lobbyID, sessionID)
+    const handleRoomCompletion = useCallback(async () => { 
+        socket.emit("LEAVE_ROOM_REQUEST", lobbyID, sessionInfo)
         navigate(`/home`, { state: { "errorMessage": "Host closed the room"}, replace: true }); 
     }, [socket, navigate]);
     const handleLobbyFinishedSwiping = useCallback(() => setIsLobbyFinished(true), [])
-    const handleSwipingComplete = useCallback(() => {
-        console.log("navigating to results")
-        navigate(`/lobby/${lobbyID}/results`, { replace: true })
-    }, [isHost, lobbyID, navigate]);
+    const handleSwipingComplete = useCallback((path, message = "") => { 
+        let state = {};
+        if (message !== "") {
+            state = { state: { "errorMessage": message } };
+        }
+        navigate(path, message, { replace: true });
+    }, [navigate]);
 
     /* ~ Setup + Teardown for socket communication ~ */
     useEffect(() => {
@@ -103,15 +95,14 @@ function SwipingPage() {
         if (state && "errorMessage" in state) { toast(state["errorMessage"]); }
         // Get businesses from database
         const getBusinessesFromHost = async () => {
-            const yelpSelection = await requestGetBusinesses(lobbyID);
+            const yelpSelection = await getLobbyRequest(lobbyID, "businesses");
             // True iff Host socket has fetched + populated the database w/ a valid Business selection
             if (yelpSelection && yelpSelection.length > 0) {
-                const session_index = await requestGetSessionIndex();   // Determine whether session data exists...
-                const session_votes = await requestGetSessionVotes();
+                const session_index = await getSessionRequest("index");   // Determine whether session data exists...
+                const session_votes = await getSessionRequest("votes");
                 const persisted_index = session_index ? session_index : 0;
                 const persisted_votes = session_votes && session_votes.length > 0 ? session_votes : new Array(yelpSelection.length).fill(0)
                 
-                console.log("data", persisted_index, persisted_votes)
                 // ... then update state variables w/ default values or session data
                 setBusinesses(yelpSelection);
                 setSwipeIndex(persisted_index);
@@ -120,7 +111,7 @@ function SwipingPage() {
         }}
         // Synchronize timer in the lobby
         const synchronizeTimestamp = async () => {
-            let response = await requestGetTimestamp(lobbyID);
+            let response = await getLobbyRequest(lobbyID, "timestamp");
             if (!response) {
                 console.log("ERROR: problem while getting lobby timestamp");
                 return;
@@ -135,13 +126,13 @@ function SwipingPage() {
     const handlePhaseComplete = useCallback(async () => {
         // Update lobby votes if user did not finish within time limit
         if (swipeIndex < businesses.length) {
-            await requestUpdateVotes(lobbyID, votes);
+            await postLobbyRequest(lobbyID, "votes", votes);
             socket.emit("LATE_FINISHED_SWIPING", lobbyID)
         }
         if (isHost) {
-            await requestUpdateTimestamp(lobbyID);
-            await requestUpdatePhase(lobbyID, 'results')
-            socket.emit("LOBBY_NAVIGATION_UPDATE", lobbyID, `/lobby/${lobbyID}/results`)
+            await postLobbyRequest(lobbyID, "timestamp", null);
+            await postLobbyRequest(lobbyID, "phase", 'results')
+            socket.emit("LOBBY_NAVIGATION_UPDATE", lobbyID, `/lobby/${lobbyID}/results`, "")
         }
     }, [isHost, lobbyID, socket, businesses, swipeIndex, votes]);
 
@@ -149,9 +140,8 @@ function SwipingPage() {
     useEffect(() => {
         if (swipeIndex !== -1 && swipeIndex === businesses.length) {
             const sendVotes = async () => {
-                await requestUpdateVotes(lobbyID, votes);
-                const sessionID = await requestGetSessionID();
-                const lobbyState = await requestUpdateSockets(lobbyID, sessionID);  
+                await postLobbyRequest(lobbyID, "votes", votes);
+                const lobbyState = await updateLobbySession(lobbyID, sessionInfo);  
                 if (lobbyState) {   // True iff this socket is the last to finish
                     socket.emit("LOBBY_FINISHED_SWIPING", lobbyID);
                     setIsLobbyFinished(lobbyState);

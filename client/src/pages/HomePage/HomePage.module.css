@@ -1,0 +1,39 @@
+.container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: var(--whites);
+}
+
+.titleContainer {
+    margin: 10px;
+}
+
+.inputContainer {
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    padding: 6px 18px;
+}
+
+.intro {
+    margin: 0;
+    font-size: 2.5rem;
+}
+
+.logo {
+    margin: 0;
+    font-size: 3.5rem;
+}
+
+.hostBtn,
+.guestBtn,
+.nameInput,
+.guestInput {
+    width: 220px;
+    margin: 4px 0;
+}

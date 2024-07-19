@@ -1,0 +1,11 @@
+.lobbyDropdown {
+    width: 350px;
+    border-bottom: 2px solid var(--red);
+
+    padding: 6px 0 12px 0;
+    margin: 12px;
+}
+
+.heading {
+    margin: 0;
+}

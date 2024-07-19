@@ -1,10 +1,10 @@
 import { useContext, useState, useRef } from 'react';
 import { useCombobox } from 'downshift';
 import { SocketContext } from '../../context/socket';
+import { updateLobbyCategory } from '../../utils/fetches';
 import CategoryTree from '../../utils/CategoryTree'
-import { requestAddCategory, requestGetSessionID } from '../../utils/FetchRequests';
 
-function CategorySelectorInput({ sessionID, myCategories, setMyCategories, allCategories, setAllCategories, lobbyID }) {
+function CategorySelectorInput({ lobbyID, sessionInfo, coordinates, myCategories, setMyCategories, setAllCategories }) {
     const socket = useContext(SocketContext);
     const categoryTree = useRef(new CategoryTree())
     const [showSuggestions, setShowSuggestions] = useState(true)
@@ -13,42 +13,20 @@ function CategorySelectorInput({ sessionID, myCategories, setMyCategories, allCa
         name: "",
         code: ""
     })
-
-    // Helper function used to reformat allCategories (state var) after inclusion of category
-    const formattedAllCategories = (updatedCategory) => {
-        const newCategories = allCategories ? [...allCategories] : [];
-        let found = false;
-        for (let i=0; i<newCategories.length; i++) {
-            const {name, sockets} = newCategories[i]
-            if (name === updatedCategory) {
-                if (!sockets.includes(sessionID)) {
-                    newCategories[i]["sockets"].push(sessionID);
-                }
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            newCategories.push({
-                "name": updatedCategory,
-                "sockets": [sessionID]
-            });
-        }
-        return newCategories
-    }
     
-    const handleSelect = (item) => {
+    const handleSelect = async (item) => {
         if(myCategories[item.name]) {
             return
         }
-        const fetchRequest = async () => {
-            await requestAddCategory(lobbyID, sessionID, item.name);
-            socket.emit("ROOM_CATEGORY_CHANGE", lobbyID);
+        const { updated_categories=[], is_new=false } = await updateLobbyCategory(lobbyID, sessionInfo, item.name, true);
+        socket.emit("ROOM_CATEGORY_CHANGE", lobbyID);
+
+        if (is_new) {
+            // TODO: make 2 socket events - ROOM_CATEGORY_ADDITION DELETION, animate if new addition or deletion
         }
-        fetchRequest();
 
         // Update state locally instead of fetching AGAIN from backend
-        setAllCategories(formattedAllCategories(item.name))
+        setAllCategories(updated_categories)
         setMyCategories(myCategories.union(new Set([item.name])))
         setShowSuggestions(false);    
         setSelectedItem({
@@ -73,8 +51,8 @@ function CategorySelectorInput({ sessionID, myCategories, setMyCategories, allCa
             }
     
             // Get autocomplete suggestions and update state
-            // TODO: Get country code from geolocation
-            const matches = categoryTree.current.beginsWith("US", inputValue);
+            const country = "country" in coordinates ? coordinates["country"] : "US"
+            const matches = categoryTree.current.beginsWith(country, inputValue);
             setSuggestions(matches);
             
         },

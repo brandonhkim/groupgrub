@@ -1,19 +1,26 @@
 import { useMemo, useState } from 'react';
 import { useCombobox } from 'downshift';
 import SearchErrorMessage from './SearchErrorMessage';
+import styles from './LocationSearchInput.module.css'
+
+
+function stringFormatter(string) {
+    return string.length > 40 ? string.slice(0,38) + '...' : string;
+}
 
 // Ref: https://medium.com/100-days-in-kyoto-to-create-a-web-app-with-google/day-25-adding-google-maps-autocomplete-search-to-a-react-app-8d238aa07288
 function boldUserText({ length, offset, string }) {
     if (length === 0 && offset === 0) {
       return string;
     }
+    string = stringFormatter(string);
     const userText = string.substring(offset, offset + length);
     const stringBefore = string.substring(0, offset);
     const stringAfter = string.substring(offset + length);
     return `${stringBefore}<b>${userText}</b>${stringAfter}`;
 }
 
-function LocationSearchInput({ coordinates, setCoordinates}) {
+function LocationSearchInput({ coordinates, setCoordinates, isHost}) {
     const [showSuggestions, setShowSuggestions] = useState(true)
     const [selectedItem, setSelectedItem] = useState({
         name: "",
@@ -45,9 +52,18 @@ function LocationSearchInput({ coordinates, setCoordinates}) {
             function(results, status) {
                 switch(status) {
                     case google.maps.GeocoderStatus.OK:
+                        let countryCode = ""
+                        for (const components of results[0].address_components) {
+                            const { short_name="", types=[] } = components;
+                            if (types.includes('country')) {
+                                countryCode = short_name;
+                                break;
+                            }
+                        }
                         const newCoordinates = {
                             latitude: results[0].geometry.location.lat(),
                             longitude: results[0].geometry.location.lng(),
+                            country: countryCode,
                             name: item.name.string
                         }
                         if (coordinates !== newCoordinates) {
@@ -60,6 +76,7 @@ function LocationSearchInput({ coordinates, setCoordinates}) {
                         setCoordinates({
                             latitude: 91,
                             longitude: 181,
+                            country: "",
                             name: ""
                         });
                         break;
@@ -68,6 +85,7 @@ function LocationSearchInput({ coordinates, setCoordinates}) {
                         setCoordinates({
                             latitude: 91,
                             longitude: 181,
+                            country: "",
                             name: ""
                         });
                         break;
@@ -145,15 +163,19 @@ function LocationSearchInput({ coordinates, setCoordinates}) {
     return (
         <div>
             <input
+                className={styles.locationInput}
                 type="search"
+                placeholder="central location"
+                disabled={!isHost}
                 {...getInputProps()}
             />
-            <ul {...getMenuProps()}>
+            <ul className={styles.suggestions} {...getMenuProps()}>
                 { searchResult.autocompleteSuggestions.length > 0
                     ? searchResult.autocompleteSuggestions.map((item, index) => {
                         return item.address.string ? (
                             <li
                                 key={item.id}
+                                className={styles.suggestion}
                                 {...getItemProps({
                                     item,
                                     index
@@ -161,7 +183,7 @@ function LocationSearchInput({ coordinates, setCoordinates}) {
                             >
                                 {/* TODO: Use DOMPurify or any other XSS-preventitive library */}
                                 <p dangerouslySetInnerHTML={{__html: boldUserText(item.name)}} />
-                                <p>{item.address.string}</p>
+                                <p>{stringFormatter(item.address.string)}</p>
                             </li>
                         ) : null ;
                     })

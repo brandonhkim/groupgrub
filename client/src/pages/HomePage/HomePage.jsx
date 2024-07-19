@@ -1,51 +1,48 @@
-import { useCallback, useContext, useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { SocketContext } from '../../context/socket';
 import { useLocation, useNavigate } from "react-router-dom"
-import { requestCreateLobby, requestGetSessionID, requestJoinLobby, requestUpdatePhase } from "../../utils/FetchRequests";
+import { createLobby, joinLobby, setSessionInfo, postLobbyRequest } from "../../utils/fetches";
 import toast from 'react-hot-toast';
+import styles from './HomePage.module.css'
 
 function HomePage() {
     const navigate = useNavigate()
     const { state = {} } = useLocation();
     const socket = useContext(SocketContext);
-    const [lobbyCode, setLobbyCode] = useState('');
 
-    /* ~ Socket event handlers ~ */
-    const handleInviteAccepted = useCallback(() => {
-        console.log("Accepted by socket")
-    }, []);
+    /* ~ State variables + setters ~ */
+    const [nickname, setNickname] = useState('');
+    const [lobbyCode, setLobbyCode] = useState('');
 
     /* ~ Button event handlers ~ */
     const hostBtnOnClick = () => {
-        const createLobby = async () => {
-            const sessionID = await requestGetSessionID();
-            const lobbyID = await requestCreateLobby(sessionID);
-            await requestUpdatePhase(lobbyID, "setup");
+        const setupLobby = async () => {
+            const sessionInfo = await setSessionInfo(nickname, socket.id);
+            const lobbyID = await createLobby(sessionInfo);
+            console.log(lobbyID)
+            await postLobbyRequest(lobbyID, "phase", "setup");
             if (lobbyID) { navigate(`/lobby/${lobbyID}/setup`, { state: { isHost: true } }); }
         }
-        createLobby();
+        if (3 <= nickname.length && nickname.length <= 12) { setupLobby(); }
+        else if (nickname.length === 0) { toast("Please provide a nickname!"); }
+        else { toast("Nicknames should be 3-12 characters long!") }
     }
     const joinBtnOnClick = () => {
-        const joinLobby = async () => {
-            const lobbyID = await requestJoinLobby(lobbyCode);
+        const setupLobby = async () => {
+            const sessionInfo = await setSessionInfo(nickname, socket.id);
+            const lobbyID = await joinLobby(lobbyCode);
             if (lobbyID) { navigate(`/lobby/${lobbyID}/setup`, { state: { isHost: false } }); }
         }
-        joinLobby();
+        if (3 <= nickname.length && nickname.length <= 12) { setupLobby(); }
+        else if (nickname.length === 0) { toast("Please provide a nickname!"); }
+        else { toast("Nicknames should be 3-12 characters long!") }
     }
 
     /* ~ Setup + Teardown for socket communication ~ */
     useEffect(() => {
         // Emit to server a new connection
         socket.emit("USER_ONLINE", "userID");   // NOTE: can integrate friends list in the future w/ userID
-
-        // Receive event from server, subscribe to socket events
-        socket.on("JOIN_SOCKET_ACCEPTED", handleInviteAccepted); 
-    
-        return () => {
-            // Unbind all event handlers before component destruction
-            socket.off("JOIN_SOCKET_ACCEPTED", handleInviteAccepted);
-        };
-    }, [socket, handleInviteAccepted]);
+    }, [socket]);
 
     /* ~ On page load, check for error message ~ */
     useEffect(() => { 
@@ -53,16 +50,33 @@ function HomePage() {
     }, []);
 
     return (
-        <div>
-            <button id="hostBtn" onClick={hostBtnOnClick}> Host a new room </button>
-
-            <div>
+        <div className={styles.container}>
+            <div className={styles.titleContainer}>
+                <h1 className={styles.intro}>Welcome to</h1>
+                <h1 className={styles.logo}>GroupGrub</h1>
+            </div>
+            <div className={styles.inputContainer}>
                 <input
+                        className={styles.nameInput}
+                        value={nickname} 
+                        maxLength={12}
+                        onChange={e => setNickname(e.target.value)}
+                        placeholder="nickname" />
+
+                <button className={styles.hostBtn} id="hostBtn" onClick={hostBtnOnClick}> host a room </button>
+
+                <input
+                    className={styles.guestInput}
                     value={lobbyCode} 
                     onChange={e => setLobbyCode(e.target.value)}
-                    placeholder="Lobby code" />
-                <button id="joinBtn" onClick={joinBtnOnClick}> Join an existing room </button>
+                    placeholder="join a room" />
+                <button
+                    className={styles.guestBtn}
+                    styles={{display: lobbyCode.length > 0 ? "block" : "none"}}
+                    id="joinBtn" 
+                    onClick={joinBtnOnClick}> join </button>
             </div>
+    
         </div>
     );
 }   

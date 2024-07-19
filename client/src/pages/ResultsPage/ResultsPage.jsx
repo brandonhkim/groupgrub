@@ -1,16 +1,11 @@
 import { useCallback, useContext, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { SocketContext } from '../../context/socket';
-import { 
-    requestGetBusinesses, 
-    requestGetSessionID, 
-    requestGetVotes,
-    requestUpdateTimestamp,
-    requestUpdateJoinable
-} from '../../utils/FetchRequests';
+
 import toast from 'react-hot-toast';
 import Podium from '../../components/Podium/Podium';
 import useHostChecker from '../../hooks/useHostChecker';
+import { getLobbyRequest, getSessionRequest, postLobbyRequest } from '../../utils/fetches';
 
 function ResultsPage() {
     const socket = useContext(SocketContext);
@@ -20,13 +15,14 @@ function ResultsPage() {
     const isHost = useHostChecker(lobbyID);
 
     /* ~ State variables + setters ~ */
+    const [sessionInfo, setSessionInfo] = useState()
     const [isLoading, setIsLoading] = useState(true);
     const [businesses, setBusinesses] = useState([]);
 
     /* ~ Teardown for lobby's database entry + socket communication ~ */
     const lobbyEarlyTeardown = async () => {
-        await requestUpdateTimestamp(lobbyID);
-        await requestUpdateJoinable(lobbyID, false);
+        await postLobbyRequest(lobbyID, "timestamp", null);
+        await postLobbyRequest(lobbyID, "joinable", false);
         socket.emit("ROOM_CLOSE_EARLY", lobbyID)
     }
 
@@ -34,26 +30,26 @@ function ResultsPage() {
     const homeBtnOnClick = () => {
         if (isHost) { lobbyEarlyTeardown(); }           // Update DB info + communicate room to leave   
         socket.emit("LEAVE_ROOM_REQUEST", lobbyID);     // Leave room yourself
-        navigate(`/home`, { replace: true });
+        navigate(`/`, { replace: true });
     }
 
     /* ~ Socket event handlers ~ */
     const handleSocketAccepted = useCallback(async () => { 
-        const sessionID = await requestGetSessionID();
-        socket.emit("JOIN_ROOM_REQUEST", lobbyID, sessionID) 
+        const sessionInfo = await getSessionRequest("info");
+        setSessionInfo(sessionInfo)
+        socket.emit("JOIN_ROOM_REQUEST", lobbyID, sessionInfo) 
     }, [lobbyID, socket]);
     const handleRoomCompletion = useCallback(async () => { 
-        const sessionID = await requestGetSessionID();
-        socket.emit("LEAVE_ROOM_REQUEST", lobbyID, sessionID)
-        navigate(`/home`, { state: { "errorMessage": "Host closed the room"}, replace: true }); 
+        socket.emit("LEAVE_ROOM_REQUEST", lobbyID, sessionInfo)
+        navigate(`/`, { state: { "errorMessage": "Host closed the room"}, replace: true }); 
     }, [socket, navigate]);
     
     const handleLobbyVotes = useCallback(async () => {
         try {
             // First, fetch the lobby's compiled votes
-            const votes = await requestGetVotes(lobbyID);
+            const votes = await getLobbyRequest(lobbyID, "votes");
             if (!votes) { console.log("ERROR: problem while getting lobby votes"); }
-            const lobbyBusinesses = await requestGetBusinesses(lobbyID);
+            const lobbyBusinesses = await getLobbyRequest(lobbyID, "businesses");
             if (!lobbyBusinesses) { console.log("ERROR: problem while getting lobby votes"); }
             
             // Then, process and organize the data into visual components

@@ -6,10 +6,12 @@ function CountdownTimer({ initialTime, timeLimit, timeoutFunction, override=fals
     const [countdown, setCountdown] = useState(null);
     const [baseTime, setBaseTime] = useState(null);
 
-    useEffect(() => {
+    /* ~ Initial setup ~ */
+    useEffect(() => { 
         if (initialTime) { setBaseTime(new Date(initialTime).getTime()); }
     }, [initialTime])
 
+    /* ~ Override logic activation ~ */
     useEffect(() => {
     /*  Formula:
         timeLimit + (baseTime - currentTime) = bufferTime
@@ -22,6 +24,7 @@ function CountdownTimer({ initialTime, timeLimit, timeoutFunction, override=fals
         }
     }, [override, timeLimit]);
 
+    /* ~ Interval instantiation ~ */
     useEffect(() => {
         const interval = setInterval(() => {
             const current = new Date().getTime();
@@ -36,10 +39,10 @@ function CountdownTimer({ initialTime, timeLimit, timeoutFunction, override=fals
     }, [baseTime, timeLimit, timeoutFunction]);
 
     return (
-      <div>
-        <p>{baseTime && countdown && Math.max(0, countdown)}</p>
-        <p>{(countdown < 0) && warningMessage}</p>
-      </div>
+        <div>
+            <p>{baseTime && countdown && Math.max(0, countdown)}</p>
+            <p>{(countdown < 0) && warningMessage}</p>
+        </div>
     );
 };
 

@@ -1,13 +1,13 @@
 class LobbyTableTemplate:
     KeySchema = [
         {
-            'AttributeName': 'lobbyID',
+            'AttributeName': 'lobby_ID',
             'KeyType': 'HASH'
         },
     ]
     AttributeDefinitions = [
         {
-            'AttributeName': 'lobbyID',
+            'AttributeName': 'lobby_ID',
             'AttributeType': 'S'
         },
     ]
