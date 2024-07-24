@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import styles from './CountdownTimer.module.css'
 
 const BUFFER_TIME = 3000;   // 3s
 const ROUTING_DELAY = 3; // 3s
@@ -40,8 +41,12 @@ function CountdownTimer({ initialTime, timeLimit, timeoutFunction, override=fals
 
     return (
         <div>
-            <p>{baseTime && countdown && Math.max(0, countdown)}</p>
-            <p>{(countdown < 0) && warningMessage}</p>
+            <div className={styles.countdown}>
+                <p className={styles.time}>{baseTime && countdown && Math.max(0, countdown)}</p>
+            </div>
+            <div className={styles.message}>
+                <p>{(countdown < 0) && warningMessage}</p>
+            </div>
         </div>
     );
 };

@@ -2,7 +2,11 @@
     position: relative;
     border: black 2px solid;
     text-align: center;
-    width: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 130px;
+    height: 100px;
     margin: 6px;
 }
 

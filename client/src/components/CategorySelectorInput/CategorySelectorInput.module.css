@@ -1,0 +1,40 @@
+.categoryInput {
+    width: 350px;
+    margin: 0;
+}
+
+.suggestions {
+    position: absolute;
+    padding: 0;
+    margin: 0;
+}
+
+.suggestion {
+    width: 350px;
+    padding: 4px 8px;
+
+    list-style-type: none;
+    border: 1px solid var(--peach);
+    background: var(--red);
+    
+    color: var(--light-green);
+    font-size: 1rem;
+
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.suggestion:first-child {
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+.suggestion:last-child {
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.suggestion p {
+    margin: 0;
+}

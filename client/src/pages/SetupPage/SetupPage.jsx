@@ -163,7 +163,7 @@ function SetupPage() {
                 <div className={`${styles.vertical} ${styles.preferenceContainer}`}>
                     { 
                         /* ~ "If Places Loader is loaded..." ~ */
-                        isHost && !isLoading && 
+                        !isLoading && 
                         <LocationSearchInput
                             coordinates={coordinates}
                             setCoordinates={setCoordinates} 

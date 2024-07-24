@@ -1,11 +1,11 @@
 import { useCallback, useContext, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { SocketContext } from '../../context/socket';
-
-import toast from 'react-hot-toast';
-import Podium from '../../components/Podium/Podium';
-import useHostChecker from '../../hooks/useHostChecker';
 import { getLobbyRequest, getSessionRequest, postLobbyRequest } from '../../utils/fetches';
+import useHostChecker from '../../hooks/useHostChecker';
+import Podium from '../../components/Podium/Podium';
+import toast from 'react-hot-toast';
+import styles from './ResultsPage.module.css'
 
 function ResultsPage() {
     const socket = useContext(SocketContext);
@@ -28,8 +28,8 @@ function ResultsPage() {
 
     /* ~ Button event handlers ~ */
     const homeBtnOnClick = () => {
-        if (isHost) { lobbyEarlyTeardown(); }           // Update DB info + communicate room to leave   
-        socket.emit("LEAVE_ROOM_REQUEST", lobbyID);     // Leave room yourself
+        if (isHost) { lobbyEarlyTeardown(); }                       // Update DB info + communicate room to leave   
+        socket.emit("LEAVE_ROOM_REQUEST", lobbyID, sessionInfo);    // Leave room yourself
         navigate(`/`, { replace: true });
     }
 
@@ -88,25 +88,33 @@ function ResultsPage() {
     }, [handleLobbyVotes, state])
     
     return (
-        <div>
-            <div> 
-                {
-                    /* ~ "If data is finished processing..." ~ */
-                    !isLoading &&
-                    <Podium topBusinesses={businesses} />
-                }
-            </div>
-            <button id="homeBtn" onClick={homeBtnOnClick}>HomePage</button>
-            <div>
-                {
-                    /* ~ Iteratively render vote count... ~ */
-                    <ol>
-                        { businesses.map(element => 
-                            <li key={`${element[0].name}${element[1]}`}>{element[0].name} {element[1]}</li>
-                        )}
-                    </ol>
-                }
-            </div>
+        <div className={styles.container}>
+        {
+            /* ~ "If data is finished processing..." ~ 
+            !isLoading &&
+            <Podium topBusinesses={businesses} /> */
+        }
+        {
+            /* ~ Iteratively render vote count... ~ */
+            <table className={styles.resultsTable}>
+                <thead>
+                    <tr>
+                        <th scope="col">business</th>
+                        <th scope="col">votes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                { businesses.map(([business, votes]) => (
+                    <tr>
+                    <td scope="row"><a className={styles.link} href={business.url} target="_blank">{business.name}</a></td>
+                    <td>{votes}</td>
+                    </tr>
+                ))}
+                </tbody>
+            </table>
+        }
+        <button id="homeBtn" onClick={homeBtnOnClick}>home</button>
+
         </div>
     );
 }

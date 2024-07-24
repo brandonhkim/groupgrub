@@ -4,20 +4,22 @@ from .repository import Repository
 from .templates.fusion_header import fusion_header
 
 # TODO: ensure that 'search?term=' suffix is correct    
-ENDPOINT = 'https://api.yelp.com/v3/businesses/search?categories='
+ENDPOINT = 'https://api.yelp.com/v3/businesses/search?term=food&categories='
 
 @dataclass
 class Business:
     name: str
     categories: list[str]
+    url: str
     image_url: str
     price: int
     address: str
     phone: str
 
-    def __init__(self, name: str, categories: list[str], image_url: str, price: int, address: str, phone: str):
+    def __init__(self, name: str, categories: list[str], url: str, image_url: str, price: int, address: str, phone: str):
         self.name = name
         self.categories = categories
+        self.url = url
         self.image_url =image_url
         self.price = price
         self.address = address
@@ -29,7 +31,8 @@ class Business:
             str(self.price) + '\n' + 
             "categories: " + str(self.categories) + '\n' +
             "address:" +  self.address + '\n' +
-            "phone: " + self.phone + '\n'
+            "phone: " + self.phone + '\n' +
+            "url: " + self.url
         )
 
 
@@ -53,7 +56,6 @@ class FusionRepository(Repository[Business]):
         formatted_radius = f'&radius={radius}'
         formatted_limiter = f'&sort_by=best_match&limit={num_results}'
         formatted_url = ENDPOINT + formatted_cats + formatted_price + formatted_location + formatted_radius + formatted_limiter
-        print(formatted_url)
         # catch exceptions
         try:
             r = requests.get(formatted_url, headers=self.headers)
@@ -73,6 +75,7 @@ class FusionRepository(Repository[Business]):
             data = {
                 'name': obj['name'],
                 'categories': obj['categories'], 
+                'url': obj['url'],
                 'image_url': obj['image_url'],
                 'price': obj['price'], 
                 'address': formatted_address,

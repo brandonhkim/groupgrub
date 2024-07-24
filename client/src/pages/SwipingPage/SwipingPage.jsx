@@ -156,7 +156,7 @@ function SwipingPage() {
                 {   
                     /* ~ "If there are Businesses to be swiped through..." ~ */
                     !isLoading && swipeIndex < businesses.length && 
-                    <div {...handlers} className={styles.draggableWindow}>
+                    <div {...handlers}>
                         <BusinessCard {...businesses[swipeIndex]} />
                     </div>
                 }
@@ -171,7 +171,7 @@ function SwipingPage() {
             <div>
                 <CountdownTimer 
                     initialTime={timestamp}
-                    timeLimit={15} 
+                    timeLimit={500} 
                     timeoutFunction={handlePhaseComplete} 
                     warningMessage={"Sending to results page..."}
                     override={isLobbyFinished} />

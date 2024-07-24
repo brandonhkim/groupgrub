@@ -1,0 +1,26 @@
+.container {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    margin: 12px 0;
+}
+
+.countdown {
+    position: fixed;
+    border: 2px solid var(--peach);
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    right: 30vw;
+    bottom: 15vh;
+
+    text-align:center;
+    line-height: 30px;
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.time {
+    margin: 0;
+}

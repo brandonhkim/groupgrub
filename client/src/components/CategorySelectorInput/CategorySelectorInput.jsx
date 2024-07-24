@@ -3,6 +3,7 @@ import { useCombobox } from 'downshift';
 import { SocketContext } from '../../context/socket';
 import { updateLobbyCategory } from '../../utils/fetches';
 import CategoryTree from '../../utils/CategoryTree'
+import styles from './CategorySelectorInput.module.css'
 
 function CategorySelectorInput({ lobbyID, sessionInfo, coordinates, myCategories, setMyCategories, setAllCategories }) {
     const socket = useContext(SocketContext);
@@ -53,7 +54,7 @@ function CategorySelectorInput({ lobbyID, sessionInfo, coordinates, myCategories
             // Get autocomplete suggestions and update state
             const country = "country" in coordinates ? coordinates["country"] : "US"
             const matches = categoryTree.current.beginsWith(country, inputValue);
-            setSuggestions(matches);
+            setSuggestions(matches.slice(0, 5));    // Limit number of suggestions shown
             
         },
         selectedItem,
@@ -66,16 +67,18 @@ function CategorySelectorInput({ lobbyID, sessionInfo, coordinates, myCategories
     return (
         <div>
             <input
+                className={styles.categoryInput}
                 type="search"
                 id="categoryInput"
                 disabled = {myCategories.length >= 5}
                 {...getInputProps()}
             />
-            <ul {...getMenuProps()}>
+            <ul className={styles.suggestions} {...getMenuProps()}>
                 { suggestions.length > 0
                     ? suggestions.map((item, index) => {
                         return (
                             <li
+                                className={styles.suggestion}
                                 key={item.code}
                                 {...getItemProps({
                                     item,

@@ -2,6 +2,7 @@ import { useContext, useEffect } from 'react';
 import { SocketContext } from '../../context/socket';
 import { updateLobbyCategory } from '../../utils/fetches';
 import CategoryCard from '.././CategoryCard/CategoryCard';
+import styles from './CategorySelectorOutput.module.css';
 
 
 function CategorySelectorOutput({ myCategories, setMyCategories, allCategories, setAllCategories, lobbyID, sessionInfo }) {
@@ -21,7 +22,7 @@ function CategorySelectorOutput({ myCategories, setMyCategories, allCategories, 
     }
     
     return (
-        <div>
+        <div className={styles.container}>
             {
                 allCategories && allCategories.map((obj, i) => {
                     const name = obj["category"]

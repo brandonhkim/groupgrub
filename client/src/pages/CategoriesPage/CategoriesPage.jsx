@@ -7,6 +7,7 @@ import CategorySelectorOutput from "../../components/CategorySelectorOutput/Cate
 import CountdownTimer from "../../components/CountdownTimer/CountdownTimer";
 import useHostChecker from "../../hooks/useHostChecker";
 import toast from 'react-hot-toast';
+import styles from './CategoriesPage.module.css'
 
 function CategoriesPage() {
     const socket = useContext(SocketContext);
@@ -125,12 +126,8 @@ function CategoriesPage() {
         }
     }, [isHost])
 
-    useEffect(() => {
-        console.log("my categories", myCategories)
-    }, [myCategories])
-
     return (
-        <div>
+        <div className={styles.container}>
             <CategorySelectorOutput 
                 myCategories={myCategories}
                 setMyCategories={setMyCategories}
@@ -138,6 +135,7 @@ function CategoriesPage() {
                 allCategories={allCategories}
                 setAllCategories={setAllCategories}
                 lobbyID={lobbyID} />
+            <h2>I want to eat...</h2>
             <CategorySelectorInput 
                 lobbyID={lobbyID}
                 sessionInfo={sessionInfo}
@@ -147,7 +145,7 @@ function CategoriesPage() {
                 setAllCategories={setAllCategories} />
             <CountdownTimer 
                 initialTime={ timestamp } 
-                timeLimit={10} 
+                timeLimit={5} 
                 timeoutFunction={handleCategoriesComplete} 
                 warningMessage={"Sending to swiping game..."} />
         </div>

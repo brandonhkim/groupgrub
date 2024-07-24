@@ -1,8 +1,8 @@
 .container {
+    width: 80vw;
+    height: 40vh;
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    height: 100vh;
 }
-

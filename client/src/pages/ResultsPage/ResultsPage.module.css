@@ -1,0 +1,49 @@
+.container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: var(--whites);
+}
+
+.resultsTable {
+    table-layout: fixed;
+    width: 300px;
+    margin: 6px;
+    border-collapse: collapse;
+    border: 2px solid var(--peach);
+}
+
+.resultsTable * {
+    text-align: left;
+}
+  
+.resultsTable thead th:first-child,
+.resultsTable tbody td:first-child {
+    width: 70%;
+}
+  
+.resultsTable thead th:last-child,
+.resultsTable tbody td:last-child {
+    text-align: center;
+    width: 30%;
+}
+
+
+  
+.resultsTable th,
+.resultsTable td {
+    padding: 8px;
+}
+
+.link {
+    text-decoration: none;
+    color: var(--red);
+}
+
+.link:hover {
+    color: var(--peach);
+}
